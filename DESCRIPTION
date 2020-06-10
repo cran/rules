@@ -1,6 +1,6 @@
 Package: rules
 Title: Model Wrappers for Rule-Based Models
-Version: 0.0.1
+Version: 0.0.2
 Authors@R: c(
     person(
         given = "Max",
@@ -26,9 +26,9 @@ RoxygenNote: 7.1.0.9000
 Imports: purrr, rlang, tibble, dials, tidyr, dplyr
 Language: en-US
 NeedsCompilation: no
-Packaged: 2020-05-09 16:48:31 UTC; max
+Packaged: 2020-06-10 13:08:00 UTC; max
 Author: Max Kuhn [aut, cre] (<https://orcid.org/0000-0003-2402-136X>),
   RStudio [cph]
 Maintainer: Max Kuhn <max@rstudio.com>
 Repository: CRAN
-Date/Publication: 2020-05-20 15:00:02 UTC
+Date/Publication: 2020-06-10 13:30:02 UTC

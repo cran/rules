@@ -50,7 +50,10 @@
 #' For the `xrf` engine, the `xgboost` package is used to create the rule set
 #'  that is then added to a `glmnet` model.
 #'
-#' The only available engine is `"xrf"`.
+#' The only available engine is `"xrf"`. Not that, per the documentation in
+#' `?xrf`, transformations of the response variable are not supported. To
+#' use these with `rule_fit()`, we recommend using a recipe instead of the
+#' formula method.
 #'
 #' @return An updated `parsnip` model specification.
 #' @seealso [parsnip::fit()], [parsnip::fit_xy()], [xrf::xrf.formula()]
@@ -343,14 +346,14 @@ organize_xrf_multi_pred <- function(x, object, penalty, fam) {
     } else {
       res <-
         tibble::as_tibble(x) %>%
-        dplyr::mutate(.rows = 1:nrow(x)) %>%
-        tidyr::pivot_longer(cols = c(-.rows), values_to = ".pred") %>%
+        dplyr::mutate(.row_number = 1:nrow(x)) %>%
+        tidyr::pivot_longer(cols = c(-.row_number), values_to = ".pred") %>%
         dplyr::mutate(penalty = rep(penalty, nrow(x))) %>%
         dplyr::select(-name) %>%
-        dplyr::group_by(.rows) %>%
+        dplyr::group_by(.row_number) %>%
         tidyr::nest() %>%
         dplyr::ungroup() %>%
-        dplyr::select(-.rows) %>%
+        dplyr::select(-.row_number) %>%
         setNames(".pred")
     }
   } else {
@@ -358,8 +361,8 @@ organize_xrf_multi_pred <- function(x, object, penalty, fam) {
 
       res <-
         tibble::as_tibble(x) %>%
-        dplyr::mutate(.rows = 1:nrow(x)) %>%
-        tidyr::pivot_longer(cols = c(-.rows), values_to = ".pred_class")  %>%
+        dplyr::mutate(.row_number = 1:nrow(x)) %>%
+        tidyr::pivot_longer(cols = c(-.row_number), values_to = ".pred_class")  %>%
         dplyr::select(-name) %>%
         dplyr::mutate(
           .pred_class = ifelse(.pred_class >= .5, object$lvl[2], object$lvl[1]),
@@ -374,10 +377,10 @@ organize_xrf_multi_pred <- function(x, object, penalty, fam) {
         res <-
           res %>%
           dplyr::mutate(penalty = rep(penalty, nrow(x))) %>%
-          dplyr::group_by(.rows) %>%
+          dplyr::group_by(.row_number) %>%
           tidyr::nest() %>%
           dplyr::ungroup() %>%
-          dplyr::select(-.rows) %>%
+          dplyr::select(-.row_number) %>%
           setNames(".pred")
       }
 
@@ -386,8 +389,8 @@ organize_xrf_multi_pred <- function(x, object, penalty, fam) {
       res <-
         apply(x, 3, function(x) apply(x, 1, which.max)) %>%
         tibble::as_tibble() %>%
-        dplyr::mutate(.rows = 1:nrow(x)) %>%
-        tidyr::pivot_longer(cols = c(-.rows), values_to = ".pred_class") %>%
+        dplyr::mutate(.row_number = 1:nrow(x)) %>%
+        tidyr::pivot_longer(cols = c(-.row_number), values_to = ".pred_class") %>%
         dplyr::select(-name) %>%
         dplyr::mutate(
           .pred_class = object$lvl[.pred_class],
@@ -401,10 +404,10 @@ organize_xrf_multi_pred <- function(x, object, penalty, fam) {
         res <-
           res %>%
           dplyr::mutate(penalty = rep(penalty, nrow(x))) %>%
-          dplyr::group_by(.rows) %>%
+          dplyr::group_by(.row_number) %>%
           tidyr::nest() %>%
           dplyr::ungroup() %>%
-          dplyr::select(-.rows) %>%
+          dplyr::select(-.row_number) %>%
           setNames(".pred")
       }
     }
@@ -418,28 +421,28 @@ organize_xrf_multi_prob <- function(x, object, penalty, fam) {
 
     res <-
       tibble::as_tibble(x) %>%
-      dplyr::mutate(.rows = 1:nrow(x)) %>%
-      tidyr::pivot_longer(cols = c(-.rows), values_to = ".pred_2") %>%
+      dplyr::mutate(.row_number = 1:nrow(x)) %>%
+      tidyr::pivot_longer(cols = c(-.row_number), values_to = ".pred_2") %>%
       dplyr::mutate(penalty = rep(penalty, nrow(x))) %>%
       dplyr::select(-name) %>%
       dplyr::mutate(.pred_1 = 1 - .pred_2) %>%
-      dplyr::select(.rows, penalty, .pred_1, .pred_2)
+      dplyr::select(.row_number, penalty, .pred_1, .pred_2)
 
     if (length(penalty) == 1) {
       # predict
       res <-
         res %>%
-        setNames(c(".rows", "penalty", object$lvl)) %>%
-        dplyr::select(-.rows, -penalty)
+        setNames(c(".row_number", "penalty", object$lvl)) %>%
+        dplyr::select(-.row_number, -penalty)
     } else {
       # multi_predict
       res <-
         res %>%
-        setNames(c(".rows", "penalty", paste0(".pred_", object$lvl))) %>%
-        dplyr::group_by(.rows) %>%
+        setNames(c(".row_number", "penalty", paste0(".pred_", object$lvl))) %>%
+        dplyr::group_by(.row_number) %>%
         tidyr::nest() %>%
         dplyr::ungroup() %>%
-        dplyr::select(-.rows) %>%
+        dplyr::select(-.row_number) %>%
         setNames(".pred")
     }
 
@@ -455,12 +458,12 @@ organize_xrf_multi_prob <- function(x, object, penalty, fam) {
       # multi_predict
       res <-
         res %>%
-        dplyr::mutate(.rows = rep(1:nrow(x), length(penalty))) %>%
+        dplyr::mutate(.row_number = rep(1:nrow(x), length(penalty))) %>%
         dplyr::mutate(penalty = rep(penalty, each = nrow(x))) %>%
-        dplyr::group_by(.rows) %>%
+        dplyr::group_by(.row_number) %>%
         tidyr::nest() %>%
         dplyr::ungroup() %>%
-        dplyr::select(-.rows) %>%
+        dplyr::select(-.row_number) %>%
         setNames(".pred")
     }
   }
