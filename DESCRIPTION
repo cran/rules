@@ -1,6 +1,6 @@
 Package: rules
 Title: Model Wrappers for Rule-Based Models
-Version: 0.1.0
+Version: 0.1.1
 Authors@R: c(
     person(
         given = "Max",
@@ -17,18 +17,20 @@ Description: Bindings for additional models for use with the 'parsnip' package.
     Cubist (Kuhn and Johnson, 2013) <doi:10.1007/978-1-4614-6849-3>. 
 License: MIT + file LICENSE
 URL: https://github.com/tidymodels/rules, https://rules.tidymodels.org
-Depends: parsnip (>= 0.1.3.9000)
+Depends: parsnip (>= 0.1.4)
 Suggests: testthat, C50, Cubist, xrf (>= 0.2.0), covr, modeldata,
-        spelling
+        spelling, recipes, knitr, rmarkdown
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1.9000
-Imports: purrr, rlang, tibble, dials, tidyr, dplyr
+Imports: purrr, rlang, tibble, dials, tidyr, dplyr, stringr, generics
+        (>= 0.1.0)
 Language: en-US
+VignetteBuilder: knitr
 NeedsCompilation: no
-Packaged: 2020-10-27 14:58:19 UTC; max
+Packaged: 2021-01-16 15:37:07 UTC; max
 Author: Max Kuhn [aut, cre] (<https://orcid.org/0000-0003-2402-136X>),
   RStudio [cph]
 Maintainer: Max Kuhn <max@rstudio.com>
 Repository: CRAN
-Date/Publication: 2020-10-28 05:30:02 UTC
+Date/Publication: 2021-01-16 15:50:02 UTC

@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>What’s the difference between Cubist and RuleFit?</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+<script>// Hide empty <a> tag within highlighted CodeBlock for screen reader accessibility (see https://github.com/jgm/pandoc/issues/6352#issuecomment-626106786) -->
+// v0.0.1
+// Written by JooYoung Seo (jooyoung@psu.edu) and Atsushi Yasumoto on June 1st, 2020.
+
+document.addEventListener('DOMContentLoaded', function() {
+  const codeList = document.getElementsByClassName("sourceCode");
+  for (var i = 0; i < codeList.length; i++) {
+    var linkList = codeList[i].getElementsByTagName('a');
+    for (var j = 0; j < linkList.length; j++) {
+      if (linkList[j].innerHTML === "") {
+        linkList[j].setAttribute('aria-hidden', 'true');
+      }
+    }
+  }
+});
+</script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+
+<style type="text/css">
+  code {
+    white-space: pre;
+  }
+  .sourceCode {
+    overflow: visible;
+  }
+</style>
+<style type="text/css" data-origin="pandoc">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">What’s the difference between Cubist and RuleFit?</h1>
+
+
+
+<p><a href="https://www.rulequest.com/cubist-win.html">Cubist</a> and <a href="https://statweb.stanford.edu/~jhf/R_RuleFit.html">RuleFit</a> are two rule-based regression models. They are similar in some ways but otherwise very different. This vignette is a short description of their approaches.</p>
+<p>Cubist is for numeric outcomes while RuleFit can work with numeric and categorical outcomes. For this document, we’ll focus on numeric outcomes (without loss of generality).</p>
+<div id="both-start-by-making-rules-from-trees" class="section level2">
+<h2>Both start by making rules from trees</h2>
+<p>For each model, an an initial tree-based model is created. Let’s look at a really simple example tree:</p>
+<p><img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9Im5vIj8+CjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+CjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWxuczpkYz0iaHR0cDovL3B1cmwub3JnL2RjL2VsZW1lbnRzLzEuMS8iIHhtbG5zOnhsPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIiB2ZXJzaW9uPSIxLjEiIHZpZXdCb3g9Ijk5LjUgMTM4IDI0MS41IDI1MiIgd2lkdGg9IjI0MS41IiBoZWlnaHQ9IjI1MiI+CiAgPGRlZnM+CiAgICA8Zm9udC1mYWNlIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EgTmV1ZSIgZm9udC1zaXplPSIxNSIgcGFub3NlLTE9IjIgMCA1IDMgMCAwIDAgMiAwIDQiIHVuaXRzLXBlci1lbT0iMTAwMCIgdW5kZXJsaW5lLXBvc2l0aW9uPSItMTAwIiB1bmRlcmxpbmUtdGhpY2tuZXNzPSI1MCIgc2xvcGU9IjAiIHgtaGVpZ2h0PSI1MTciIGNhcC1oZWlnaHQ9IjcxNCIgYXNjZW50PSI5NTEuOTk1OCIgZGVzY2VudD0iLTIxMi45OTc0NCIgZm9udC13ZWlnaHQ9IjQwMCI+CiAgICAgIDxmb250LWZhY2Utc3JjPgogICAgICAgIDxmb250LWZhY2UtbmFtZSBuYW1lPSJIZWx2ZXRpY2FOZXVlIi8+CiAgICAgIDwvZm9udC1mYWNlLXNyYz4KICAgIDwvZm9udC1mYWNlPgogICAgPGZvbnQtZmFjZSBmb250LWZhbWlseT0iSGVsdmV0aWNhIE5ldWUiIGZvbnQtc2l6ZT0iMTYiIHBhbm9zZS0xPSIyIDAgNSAzIDAgMCAwIDIgMCA0IiB1bml0cy1wZXItZW09IjEwMDAiIHVuZGVybGluZS1wb3NpdGlvbj0iLTEwMCIgdW5kZXJsaW5lLXRoaWNrbmVzcz0iNTAiIHNsb3BlPSIwIiB4LWhlaWdodD0iNTE3IiBjYXAtaGVpZ2h0PSI3MTQiIGFzY2VudD0iOTUxLjk5NTgiIGRlc2NlbnQ9Ii0yMTIuOTk3NDQiIGZvbnQtd2VpZ2h0PSI0MDAiPgogICAgICA8Zm9udC1mYWNlLXNyYz4KICAgICAgICA8Zm9udC1mYWNlLW5hbWUgbmFtZT0iSGVsdmV0aWNhTmV1ZSIvPgogICAgICA8L2ZvbnQtZmFjZS1zcmM+CiAgICA8L2ZvbnQtZmFjZT4KICAgIDxtYXJrZXIgb3JpZW50PSJhdXRvIiBvdmVyZmxvdz0idmlzaWJsZSIgbWFya2VyVW5pdHM9InN0cm9rZVdpZHRoIiBpZD0iRmlsbGVkQXJyb3dfTWFya2VyIiBzdHJva2UtbGluZWpvaW49Im1pdGVyIiBzdHJva2UtbWl0ZXJsaW1pdD0iMTAiIHZpZXdCb3g9Ii0xIC00IDEwIDgiIG1hcmtlcldpZHRoPSIxMCIgbWFya2VySGVpZ2h0PSI4IiBjb2xvcj0iYmxhY2siPgogICAgICA8Zz4KICAgICAgICA8cGF0aCBkPSJNIDggMCBMIDAgLTMgTCAwIDMgWiIgZmlsbD0iY3VycmVudENvbG9yIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgICAgIDwvZz4KICAgIDwvbWFya2VyPgogIDwvZGVmcz4KICA8bWV0YWRhdGE+IFByb2R1Y2VkIGJ5IE9tbmlHcmFmZmxlIDcuMTcuNVxuMjAyMC0xMi0xOCAxOTowMTo1MiArMDAwMDwvbWV0YWRhdGE+CiAgPGcgaWQ9IkNhbnZhc18xIiBzdHJva2U9Im5vbmUiIHN0cm9rZS1vcGFjaXR5PSIxIiBzdHJva2UtZGFzaGFycmF5PSJub25lIiBmaWxsLW9wYWNpdHk9IjEiIGZpbGw9Im5vbmUiPgogICAgPHRpdGxlPkNhbnZhcyAxPC90aXRsZT4KICAgIDxnIGlkPSJDYW52YXNfMV9MYXllcl8xIj4KICAgICAgPHRpdGxlPkxheWVyIDE8L3RpdGxlPgogICAgICA8ZyBpZD0iR3JhcGhpY18yIj4KICAgICAgICA8Y2lyY2xlIGN4PSIyNjIiIGN5PSIxNjgiIHI9IjI5LjUwMDA0NzEzODEwNTkiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgICAgICAgPHRleHQgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMjQzLjQgMTU5LjI5KSIgZmlsbD0iYmxhY2siPgogICAgICAgICAgPHRzcGFuIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EgTmV1ZSIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9IjQwMCIgZmlsbD0iYmxhY2siIHg9IjEuMDQyNTAwNCIgeT0iMTQiPkEgJmx0OyBhPC90c3Bhbj4KICAgICAgICA8L3RleHQ+CiAgICAgIDwvZz4KICAgICAgPGcgaWQ9IkdyYXBoaWNfNSI+CiAgICAgICAgPHBhdGggZD0iTSAzMTUuMjUgMjQ4Ljc1IEwgMzQwLjUgMjcyIEwgMzE1LjI1IDI5NS4yNSBMIDI5MCAyNzIgWiIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgICA8dGV4dCB0cmFuc2Zvcm09InRyYW5zbGF0ZSgzMDEuODE3NSAyNjIuMzExKSIgZmlsbD0iYmxhY2siPgogICAgICAgICAgPHRzcGFuIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EgTmV1ZSIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9IjQwMCIgZmlsbD0iYmxhY2siIHg9IjkuNDg5NSIgeT0iMTUiPjM8L3RzcGFuPgogICAgICAgIDwvdGV4dD4KICAgICAgPC9nPgogICAgICA8ZyBpZD0iTGluZV84Ij4KICAgICAgICA8bGluZSB4MT0iMjc1LjQ0ODMiIHkxPSIxOTQuMjY1MjMiIHgyPSIzMDIuNjQ3ODUiIHkyPSIyNDcuMzg3MzQiIG1hcmtlci1lbmQ9InVybCgjRmlsbGVkQXJyb3dfTWFya2VyKSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgPC9nPgogICAgICA8ZyBpZD0iR3JhcGhpY18xNCI+CiAgICAgICAgPGNpcmNsZSBjeD0iMTkxLjUiIGN5PSIyNzIiIHI9IjI5LjUwMDA0NzEzODEwNTkiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgICAgICAgPHRleHQgdHJhbnNmb3JtPSJ0cmFuc2xhdGUoMTcyLjkgMjYzLjI5KSIgZmlsbD0iYmxhY2siPgogICAgICAgICAgPHRzcGFuIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EgTmV1ZSIgZm9udC1zaXplPSIxNSIgZm9udC13ZWlnaHQ9IjQwMCIgZmlsbD0iYmxhY2siIHg9Ii4zNDUwMDA0IiB5PSIxNCI+QiAmbHQ7IGI8L3RzcGFuPgogICAgICAgIDwvdGV4dD4KICAgICAgPC9nPgogICAgICA8ZyBpZD0iTGluZV8xNSI+CiAgICAgICAgPGxpbmUgeDE9IjI0NS40NDQxNiIgeTE9IjE5Mi40MjI4IiB4Mj0iMjEzLjYxMDg1IiB5Mj0iMjM5LjM4MjU4IiBtYXJrZXItZW5kPSJ1cmwoI0ZpbGxlZEFycm93X01hcmtlcikiIHN0cm9rZT0iYmxhY2siIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIgc3Ryb2tlLXdpZHRoPSIxIi8+CiAgICAgIDwvZz4KICAgICAgPGcgaWQ9IkdyYXBoaWNfMTgiPgogICAgICAgIDxwYXRoIGQ9Ik0gMjQ0LjI1IDM0MyBMIDI2OS41IDM2Ni4yNSBMIDI0NC4yNSAzODkuNSBMIDIxOSAzNjYuMjUgWiIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgICA8dGV4dCB0cmFuc2Zvcm09InRyYW5zbGF0ZSgyMzAuODE3NSAzNTYuNTYxKSIgZmlsbD0iYmxhY2siPgogICAgICAgICAgPHRzcGFuIGZvbnQtZmFtaWx5PSJIZWx2ZXRpY2EgTmV1ZSIgZm9udC1zaXplPSIxNiIgZm9udC13ZWlnaHQ9IjQwMCIgZmlsbD0iYmxhY2siIHg9IjkuNDg5NSIgeT0iMTUiPjI8L3RzcGFuPgogICAgICAgIDwvdGV4dD4KICAgICAgPC9nPgogICAgICA8ZyBpZD0iR3JhcGhpY18xOSI+CiAgICAgICAgPHBhdGggZD0iTSAxMjUuMjUgMzQzIEwgMTUwLjUgMzY2LjI1IEwgMTI1LjI1IDM4OS41IEwgMTAwIDM2Ni4yNSBaIiBzdHJva2U9ImJsYWNrIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIHN0cm9rZS13aWR0aD0iMSIvPgogICAgICAgIDx0ZXh0IHRyYW5zZm9ybT0idHJhbnNsYXRlKDExMS44MTc1IDM1Ni41NjEpIiBmaWxsPSJibGFjayI+CiAgICAgICAgICA8dHNwYW4gZm9udC1mYW1pbHk9IkhlbHZldGljYSBOZXVlIiBmb250LXNpemU9IjE2IiBmb250LXdlaWdodD0iNDAwIiBmaWxsPSJibGFjayIgeD0iOS40ODk1IiB5PSIxNSI+MTwvdHNwYW4+CiAgICAgICAgPC90ZXh0PgogICAgICA8L2c+CiAgICAgIDxnIGlkPSJMaW5lXzIwIj4KICAgICAgICA8bGluZSB4MT0iMTc0LjUzMjg1IiB5MT0iMjk2LjEzODE2IiB4Mj0iMTQwLjg2NDQ3IiB5Mj0iMzQ0LjAzNjIiIG1hcmtlci1lbmQ9InVybCgjRmlsbGVkQXJyb3dfTWFya2VyKSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgPC9nPgogICAgICA8ZyBpZD0iTGluZV8yMSI+CiAgICAgICAgPGxpbmUgeDE9IjIwNS45MTEyNCIgeTE9IjI5Ny43NDkiIHgyPSIyMzAuODI3NzMiIHkyPSIzNDIuMjY4MDMiIG1hcmtlci1lbmQ9InVybCgjRmlsbGVkQXJyb3dfTWFya2VyKSIgc3Ryb2tlPSJibGFjayIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIiBzdHJva2Utd2lkdGg9IjEiLz4KICAgICAgPC9nPgogICAgPC9nPgogIDwvZz4KPC9zdmc+Cg==" style="display: block; margin: auto;" /></p>
+<p>In this case, two predictors are used in splits: <code>A</code> and <code>B</code>. On this graph, the split to the left is the “&lt;” condition. There are three terminal nodes shown as diamonds. This tree-based structure can be converted to a set of distinct rules. Each rule is a collection of <code>if/then</code> statements that define the path to the terminal nodes. In this example:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1"></a>rule_<span class="dv">1</span> &lt;-<span class="st"> </span>(A <span class="op">&lt;</span><span class="st">  </span>a) <span class="op">&amp;</span><span class="st"> </span>(B <span class="op">&lt;</span><span class="st">  </span>b)</span>
+<span id="cb1-2"><a href="#cb1-2"></a>rule_<span class="dv">2</span> &lt;-<span class="st"> </span>(A <span class="op">&lt;</span><span class="st">  </span>a) <span class="op">&amp;</span><span class="st"> </span>(B <span class="op">&gt;=</span><span class="st"> </span>b)</span>
+<span id="cb1-3"><a href="#cb1-3"></a>rule_<span class="dv">3</span> &lt;-<span class="st"> </span>(A <span class="op">&gt;=</span><span class="st"> </span>a)</span></code></pre></div>
+<p>As is, these paths through the tree are mutually exclusive. For deep trees, these rules can become overly complex and may contain redundancies. Cubist takes the approach of <a href="https://scholar.google.com/scholar?hl=en&amp;as_sdt=0%2C7&amp;q=%22Simplifying+decision+trees%22&amp;btnG=">simplifying rules</a> whenever possible. For example,</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1"></a>rule_x &lt;-<span class="st"> </span>(A <span class="op">&lt;</span><span class="st">  </span><span class="dv">10</span>)  <span class="op">&amp;</span><span class="st"> </span>(A <span class="op">&lt;</span><span class="st">  </span><span class="dv">7</span>) <span class="op">&amp;</span><span class="st"> </span>(B <span class="op">&gt;=</span><span class="st"> </span><span class="dv">1</span>)</span></code></pre></div>
+<p>becomes</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1"></a>rule_y &lt;-<span class="st"> </span>(A <span class="op">&lt;</span><span class="st"> </span><span class="dv">7</span>) <span class="op">&amp;</span><span class="st"> </span>(B <span class="op">&gt;=</span><span class="st"> </span><span class="dv">1</span>)</span></code></pre></div>
+<p>Cubist also has an approach that can <em>prune</em> conditions inside of the rule that simplifies the structure without degrading performance. If <code>B</code> doesn’t matter much in the rule above, then Cubist could reduce it to <code>A &lt; 7</code>.</p>
+<p>Cubist and RuleFit are also ensemble methods. For RuleFit, any tree ensemble model could generate a set of rules. For the <code>xrf</code> package, the <code>xgboost</code> package creates the initial set of rules. The rules create be each tree are pooled into a broader rule set. Cubist takes a different approach and uses model committees (see <a href="http://appliedpredictivemodeling.com/"><em>APM</em></a> Chapter 14). This is similar to boosting but creates a pseudo-outcome for each tree in the ensemble. This outcome adjusts the trees based on the size of the residual from the previous tree.</p>
+<p>At the end of the rule generating process, the rules are unlikely to mutually exclusive. Any data point is likely to be fall into multiple rules.</p>
+<p>Now let’s look at how each model uses the rules.</p>
+</div>
+<div id="cubists-makes-a-model-for-each-rule" class="section level2">
+<h2>Cubists makes a model for each rule</h2>
+<p>Before delving into the rules, let’s start with the <a href="https://scholar.google.com/scholar?hl=en&amp;as_sdt=0%2C7&amp;q=%22Learning+with+continuous+classes%22&amp;btnG="><em>model tree</em></a> initially created by Cubist. An initial tree is created and a regression model is created for <em>each split in the tree</em>. Each linear regression is created on the subset of the data covered by the current rule and uses only the predictors in the current rule. In the tree shown above, the first split produces two models with <code>A</code> as a predictor. The data for each are filtered either with <code>A &lt; a</code> or <code>A &gt;= a</code>. The entire set of models are:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1"></a>split_<span class="dv">1</span>_low  &lt;-<span class="st"> </span><span class="kw">filter</span>(data, A <span class="op">&lt;</span><span class="st">  </span>a)</span>
+<span id="cb4-2"><a href="#cb4-2"></a>model_<span class="dv">1</span>_low  &lt;-<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>A, <span class="dt">data =</span> split_<span class="dv">1</span>_low)</span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a>split_<span class="dv">1</span>_high &lt;-<span class="st"> </span><span class="kw">filter</span>(data, A <span class="op">&gt;=</span><span class="st"> </span>a)</span>
+<span id="cb4-5"><a href="#cb4-5"></a>model_<span class="dv">1</span>_high &lt;-<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>A, <span class="dt">data =</span> split_<span class="dv">1</span>_high)</span>
+<span id="cb4-6"><a href="#cb4-6"></a></span>
+<span id="cb4-7"><a href="#cb4-7"></a>split_<span class="dv">2</span>_low  &lt;-<span class="st"> </span><span class="kw">filter</span>(data, A <span class="op">&lt;</span><span class="st">  </span>a <span class="op">&amp;</span><span class="st"> </span>B <span class="op">&lt;</span><span class="st">  </span>b)</span>
+<span id="cb4-8"><a href="#cb4-8"></a>model_<span class="dv">2</span>_low  &lt;-<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>A <span class="op">+</span><span class="st"> </span>B, <span class="dt">data =</span> split_<span class="dv">2</span>_low)</span>
+<span id="cb4-9"><a href="#cb4-9"></a></span>
+<span id="cb4-10"><a href="#cb4-10"></a>split_<span class="dv">2</span>_high &lt;-<span class="st"> </span><span class="kw">filter</span>(data, A <span class="op">&lt;</span><span class="st">  </span>a <span class="op">&amp;</span><span class="st"> </span>B <span class="op">&gt;=</span><span class="st"> </span>b)</span>
+<span id="cb4-11"><a href="#cb4-11"></a>model_<span class="dv">2</span>_high &lt;-<span class="st"> </span><span class="kw">lm</span>(y <span class="op">~</span><span class="st"> </span>A <span class="op">+</span><span class="st"> </span>B, <span class="dt">data =</span> split_<span class="dv">2</span>_high)</span></code></pre></div>
+<p>Cubist does some feature selection on these models so they may not contain all of the possible predictors. Also, since Cubist prunes the rules, there may be not appear to be a connection between the variables used in a rule and its corresponding model.</p>
+<p>The models associated with the rules are actually average of many models further up the tree. Since these are linear models, the models used by Cubist for each rule have coefficients that are averages:</p>
+<table>
+<thead>
+<tr class="header">
+<th>Rule</th>
+<th>Logic</th>
+<th>Blended Models</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><code>A &lt;  a &amp; B &lt; b</code></td>
+<td><code>model_1_low</code> and <code>model_2_low</code></td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><code>A &lt;  a &amp; B &gt;= b</code></td>
+<td><code>model_1_low</code> and <code>model_2_high</code></td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td><code>A &gt;= a</code></td>
+<td><code>model_1_high</code></td>
+</tr>
+</tbody>
+</table>
+<p>The equations for averaging were first described in <a href="https://scholar.google.com/scholar?hl=en&amp;as_sdt=0%2C7&amp;q=%22Learning+with+continuous+classes%22&amp;btnG=">Quinlan (1992)</a> but the updated equation for Cubist can be found in Chapter 14 of <a href="http://appliedpredictivemodeling.com/"><em>APM</em></a>.</p>
+<p>There is a model for each committee and rule within committee. When predicting, a new observation is compared to the conditions in the rules to determine which rules are active for this data point. The active linear models predict the new sample and these predictions are averaged to produce the final prediction value.</p>
+<p>Perhaps unrelated to this document, which focuses on how rules are used, Cubist also does a <a href="https://scholar.google.com/scholar?hl=en&amp;as_sdt=0%2C7&amp;q=%22Combining+instance-based+and+model-based+learning%22&amp;btnG=">nearest-neighbor correction</a> to the predicted values.</p>
+<p>Let’s look at an example model on the Palmer penguin data:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1"></a><span class="kw">library</span>(rules)</span>
+<span id="cb5-2"><a href="#cb5-2"></a><span class="co">#&gt; Loading required package: parsnip</span></span>
+<span id="cb5-3"><a href="#cb5-3"></a><span class="kw">data</span>(penguins, <span class="dt">package =</span> <span class="st">&quot;modeldata&quot;</span>)</span>
+<span id="cb5-4"><a href="#cb5-4"></a></span>
+<span id="cb5-5"><a href="#cb5-5"></a>cubist_fit &lt;-<span class="st"> </span></span>
+<span id="cb5-6"><a href="#cb5-6"></a><span class="st">  </span><span class="kw">cubist_rules</span>(<span class="dt">committees =</span> <span class="dv">2</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb5-7"><a href="#cb5-7"></a><span class="st">  </span><span class="kw">set_engine</span>(<span class="st">&quot;Cubist&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb5-8"><a href="#cb5-8"></a><span class="st">  </span><span class="kw">fit</span>(body_mass_g <span class="op">~</span><span class="st"> </span>., <span class="dt">data =</span> penguins)</span>
+<span id="cb5-9"><a href="#cb5-9"></a>cubist_fit</span>
+<span id="cb5-10"><a href="#cb5-10"></a><span class="co">#&gt; parsnip model object</span></span>
+<span id="cb5-11"><a href="#cb5-11"></a><span class="co">#&gt; </span></span>
+<span id="cb5-12"><a href="#cb5-12"></a><span class="co">#&gt; Fit time:  25ms </span></span>
+<span id="cb5-13"><a href="#cb5-13"></a><span class="co">#&gt; </span></span>
+<span id="cb5-14"><a href="#cb5-14"></a><span class="co">#&gt; Call:</span></span>
+<span id="cb5-15"><a href="#cb5-15"></a><span class="co">#&gt; cubist.default(x = x, y = y, committees = 2)</span></span>
+<span id="cb5-16"><a href="#cb5-16"></a><span class="co">#&gt; </span></span>
+<span id="cb5-17"><a href="#cb5-17"></a><span class="co">#&gt; Number of samples: 333 </span></span>
+<span id="cb5-18"><a href="#cb5-18"></a><span class="co">#&gt; Number of predictors: 6 </span></span>
+<span id="cb5-19"><a href="#cb5-19"></a><span class="co">#&gt; </span></span>
+<span id="cb5-20"><a href="#cb5-20"></a><span class="co">#&gt; Number of committees: 2 </span></span>
+<span id="cb5-21"><a href="#cb5-21"></a><span class="co">#&gt; Number of rules per committee: 5, 1</span></span></code></pre></div>
+<p>The <code>summary()</code> function shows the details of the rules.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1"></a><span class="kw">summary</span>(cubist_fit<span class="op">$</span>fit)</span>
+<span id="cb6-2"><a href="#cb6-2"></a><span class="co">#&gt; </span></span>
+<span id="cb6-3"><a href="#cb6-3"></a><span class="co">#&gt; Call:</span></span>
+<span id="cb6-4"><a href="#cb6-4"></a><span class="co">#&gt; cubist.default(x = x, y = y, committees = 2)</span></span>
+<span id="cb6-5"><a href="#cb6-5"></a><span class="co">#&gt; </span></span>
+<span id="cb6-6"><a href="#cb6-6"></a><span class="co">#&gt; </span></span>
+<span id="cb6-7"><a href="#cb6-7"></a><span class="co">#&gt; Cubist [Release 2.07 GPL Edition]  Sat Jan 16 10:37:04 2021</span></span>
+<span id="cb6-8"><a href="#cb6-8"></a><span class="co">#&gt; ---------------------------------</span></span>
+<span id="cb6-9"><a href="#cb6-9"></a><span class="co">#&gt; </span></span>
+<span id="cb6-10"><a href="#cb6-10"></a><span class="co">#&gt;     Target attribute `outcome&#39;</span></span>
+<span id="cb6-11"><a href="#cb6-11"></a><span class="co">#&gt; </span></span>
+<span id="cb6-12"><a href="#cb6-12"></a><span class="co">#&gt; Read 333 cases (7 attributes) from undefined.data</span></span>
+<span id="cb6-13"><a href="#cb6-13"></a><span class="co">#&gt; </span></span>
+<span id="cb6-14"><a href="#cb6-14"></a><span class="co">#&gt; Model 1:</span></span>
+<span id="cb6-15"><a href="#cb6-15"></a><span class="co">#&gt; </span></span>
+<span id="cb6-16"><a href="#cb6-16"></a><span class="co">#&gt;   Rule 1/1: [107 cases, mean 3419.2, range 2700 to 4150, est err 208.3]</span></span>
+<span id="cb6-17"><a href="#cb6-17"></a><span class="co">#&gt; </span></span>
+<span id="cb6-18"><a href="#cb6-18"></a><span class="co">#&gt;     if</span></span>
+<span id="cb6-19"><a href="#cb6-19"></a><span class="co">#&gt;  flipper_length_mm &lt;= 202</span></span>
+<span id="cb6-20"><a href="#cb6-20"></a><span class="co">#&gt;  sex = female</span></span>
+<span id="cb6-21"><a href="#cb6-21"></a><span class="co">#&gt;     then</span></span>
+<span id="cb6-22"><a href="#cb6-22"></a><span class="co">#&gt;  outcome = -1068 + 108 bill_depth_mm + 10.7 flipper_length_mm</span></span>
+<span id="cb6-23"><a href="#cb6-23"></a><span class="co">#&gt;            + 14 bill_length_mm</span></span>
+<span id="cb6-24"><a href="#cb6-24"></a><span class="co">#&gt; </span></span>
+<span id="cb6-25"><a href="#cb6-25"></a><span class="co">#&gt;   Rule 1/2: [92 cases, mean 3972.0, range 3250 to 4775, est err 275.6]</span></span>
+<span id="cb6-26"><a href="#cb6-26"></a><span class="co">#&gt; </span></span>
+<span id="cb6-27"><a href="#cb6-27"></a><span class="co">#&gt;     if</span></span>
+<span id="cb6-28"><a href="#cb6-28"></a><span class="co">#&gt;  flipper_length_mm &lt;= 202</span></span>
+<span id="cb6-29"><a href="#cb6-29"></a><span class="co">#&gt;  sex = male</span></span>
+<span id="cb6-30"><a href="#cb6-30"></a><span class="co">#&gt;     then</span></span>
+<span id="cb6-31"><a href="#cb6-31"></a><span class="co">#&gt;  outcome = 319.1 + 22.3 flipper_length_mm - 21 bill_length_mm</span></span>
+<span id="cb6-32"><a href="#cb6-32"></a><span class="co">#&gt;            + 12 bill_depth_mm</span></span>
+<span id="cb6-33"><a href="#cb6-33"></a><span class="co">#&gt; </span></span>
+<span id="cb6-34"><a href="#cb6-34"></a><span class="co">#&gt;   Rule 1/3: [58 cases, mean 4679.7, range 3950 to 5200, est err 206.6]</span></span>
+<span id="cb6-35"><a href="#cb6-35"></a><span class="co">#&gt; </span></span>
+<span id="cb6-36"><a href="#cb6-36"></a><span class="co">#&gt;     if</span></span>
+<span id="cb6-37"><a href="#cb6-37"></a><span class="co">#&gt;  flipper_length_mm &gt; 202</span></span>
+<span id="cb6-38"><a href="#cb6-38"></a><span class="co">#&gt;  sex = female</span></span>
+<span id="cb6-39"><a href="#cb6-39"></a><span class="co">#&gt;     then</span></span>
+<span id="cb6-40"><a href="#cb6-40"></a><span class="co">#&gt;  outcome = -3923.3 + 30.4 flipper_length_mm + 136 bill_depth_mm</span></span>
+<span id="cb6-41"><a href="#cb6-41"></a><span class="co">#&gt;            + 5 bill_length_mm</span></span>
+<span id="cb6-42"><a href="#cb6-42"></a><span class="co">#&gt; </span></span>
+<span id="cb6-43"><a href="#cb6-43"></a><span class="co">#&gt;   Rule 1/4: [23 cases, mean 4698.9, range 3950 to 6050, est err 275.8]</span></span>
+<span id="cb6-44"><a href="#cb6-44"></a><span class="co">#&gt; </span></span>
+<span id="cb6-45"><a href="#cb6-45"></a><span class="co">#&gt;     if</span></span>
+<span id="cb6-46"><a href="#cb6-46"></a><span class="co">#&gt;  bill_depth_mm &gt; 16.4</span></span>
+<span id="cb6-47"><a href="#cb6-47"></a><span class="co">#&gt;  flipper_length_mm &gt; 202</span></span>
+<span id="cb6-48"><a href="#cb6-48"></a><span class="co">#&gt;     then</span></span>
+<span id="cb6-49"><a href="#cb6-49"></a><span class="co">#&gt;  outcome = -7845.8 + 58.6 flipper_length_mm</span></span>
+<span id="cb6-50"><a href="#cb6-50"></a><span class="co">#&gt; </span></span>
+<span id="cb6-51"><a href="#cb6-51"></a><span class="co">#&gt;   Rule 1/5: [53 cases, mean 5475.0, range 4750 to 6300, est err 239.3]</span></span>
+<span id="cb6-52"><a href="#cb6-52"></a><span class="co">#&gt; </span></span>
+<span id="cb6-53"><a href="#cb6-53"></a><span class="co">#&gt;     if</span></span>
+<span id="cb6-54"><a href="#cb6-54"></a><span class="co">#&gt;  bill_depth_mm &lt;= 16.4</span></span>
+<span id="cb6-55"><a href="#cb6-55"></a><span class="co">#&gt;  sex = male</span></span>
+<span id="cb6-56"><a href="#cb6-56"></a><span class="co">#&gt;     then</span></span>
+<span id="cb6-57"><a href="#cb6-57"></a><span class="co">#&gt;  outcome = -138.7 + 46 bill_length_mm + 89 bill_depth_mm</span></span>
+<span id="cb6-58"><a href="#cb6-58"></a><span class="co">#&gt;            + 8.9 flipper_length_mm</span></span>
+<span id="cb6-59"><a href="#cb6-59"></a><span class="co">#&gt; </span></span>
+<span id="cb6-60"><a href="#cb6-60"></a><span class="co">#&gt; Model 2:</span></span>
+<span id="cb6-61"><a href="#cb6-61"></a><span class="co">#&gt; </span></span>
+<span id="cb6-62"><a href="#cb6-62"></a><span class="co">#&gt;   Rule 2/1: [333 cases, mean 4207.1, range 2700 to 6300, est err 315.4]</span></span>
+<span id="cb6-63"><a href="#cb6-63"></a><span class="co">#&gt; </span></span>
+<span id="cb6-64"><a href="#cb6-64"></a><span class="co">#&gt;  outcome = -5815.1 + 49.7 flipper_length_mm</span></span>
+<span id="cb6-65"><a href="#cb6-65"></a><span class="co">#&gt; </span></span>
+<span id="cb6-66"><a href="#cb6-66"></a><span class="co">#&gt; </span></span>
+<span id="cb6-67"><a href="#cb6-67"></a><span class="co">#&gt; Evaluation on training data (333 cases):</span></span>
+<span id="cb6-68"><a href="#cb6-68"></a><span class="co">#&gt; </span></span>
+<span id="cb6-69"><a href="#cb6-69"></a><span class="co">#&gt;     Average  |error|              278.7</span></span>
+<span id="cb6-70"><a href="#cb6-70"></a><span class="co">#&gt;     Relative |error|               0.41</span></span>
+<span id="cb6-71"><a href="#cb6-71"></a><span class="co">#&gt;     Correlation coefficient        0.90</span></span>
+<span id="cb6-72"><a href="#cb6-72"></a><span class="co">#&gt; </span></span>
+<span id="cb6-73"><a href="#cb6-73"></a><span class="co">#&gt; </span></span>
+<span id="cb6-74"><a href="#cb6-74"></a><span class="co">#&gt;  Attribute usage:</span></span>
+<span id="cb6-75"><a href="#cb6-75"></a><span class="co">#&gt;    Conds  Model</span></span>
+<span id="cb6-76"><a href="#cb6-76"></a><span class="co">#&gt; </span></span>
+<span id="cb6-77"><a href="#cb6-77"></a><span class="co">#&gt;     47%           sex</span></span>
+<span id="cb6-78"><a href="#cb6-78"></a><span class="co">#&gt;     42%   100%    flipper_length_mm</span></span>
+<span id="cb6-79"><a href="#cb6-79"></a><span class="co">#&gt;     11%    47%    bill_depth_mm</span></span>
+<span id="cb6-80"><a href="#cb6-80"></a><span class="co">#&gt;            47%    bill_length_mm</span></span>
+<span id="cb6-81"><a href="#cb6-81"></a><span class="co">#&gt; </span></span>
+<span id="cb6-82"><a href="#cb6-82"></a><span class="co">#&gt; </span></span>
+<span id="cb6-83"><a href="#cb6-83"></a><span class="co">#&gt; Time: 0.0 secs</span></span></code></pre></div>
+<p>Note that the only rule in the second committee has no conditions; all data points being predicted are affected by that rule. Also, it is possible for the linear model within a rule to only contain an intercept.</p>
+<p>The <code>tidy()</code> function can extract the rule and model data:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1"></a>cb_res &lt;-<span class="st"> </span><span class="kw">tidy</span>(cubist_fit)</span>
+<span id="cb7-2"><a href="#cb7-2"></a>cb_res</span>
+<span id="cb7-3"><a href="#cb7-3"></a><span class="co">#&gt; # A tibble: 6 x 5</span></span>
+<span id="cb7-4"><a href="#cb7-4"></a><span class="co">#&gt;   committee rule_num rule                             estimate      statistic   </span></span>
+<span id="cb7-5"><a href="#cb7-5"></a><span class="co">#&gt;       &lt;int&gt;    &lt;int&gt; &lt;chr&gt;                            &lt;list&gt;        &lt;list&gt;      </span></span>
+<span id="cb7-6"><a href="#cb7-6"></a><span class="co">#&gt; 1         1        1 ( sex == &#39;female&#39; ) &amp; ( flipper… &lt;tibble [4 ×… &lt;tibble [1 …</span></span>
+<span id="cb7-7"><a href="#cb7-7"></a><span class="co">#&gt; 2         1        2 ( sex == &#39;male&#39; ) &amp; ( flipper_l… &lt;tibble [4 ×… &lt;tibble [1 …</span></span>
+<span id="cb7-8"><a href="#cb7-8"></a><span class="co">#&gt; 3         1        3 ( flipper_length_mm &gt; 202 ) &amp; (… &lt;tibble [4 ×… &lt;tibble [1 …</span></span>
+<span id="cb7-9"><a href="#cb7-9"></a><span class="co">#&gt; 4         1        4 ( flipper_length_mm &gt; 202 ) &amp; (… &lt;tibble [2 ×… &lt;tibble [1 …</span></span>
+<span id="cb7-10"><a href="#cb7-10"></a><span class="co">#&gt; 5         1        5 ( bill_depth_mm &lt;= 16.4 ) &amp; ( s… &lt;tibble [4 ×… &lt;tibble [1 …</span></span>
+<span id="cb7-11"><a href="#cb7-11"></a><span class="co">#&gt; 6         2        1 &lt;no conditions&gt;                  &lt;tibble [2 ×… &lt;tibble [1 …</span></span></code></pre></div>
+<p>The <code>estimate</code> and <code>statistic</code> columns contain tibbles with parameter estimates and rule statistics, respectively. They can be easily expanded using <code>unnest()</code>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1"></a><span class="kw">library</span>(tidyr)</span>
+<span id="cb8-2"><a href="#cb8-2"></a>cb_res <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-3"><a href="#cb8-3"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">select</span>(committee, rule_num, statistic) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb8-4"><a href="#cb8-4"></a><span class="st">  </span><span class="kw">unnest</span>(<span class="dt">cols =</span> <span class="kw">c</span>(statistic))</span>
+<span id="cb8-5"><a href="#cb8-5"></a><span class="co">#&gt; # A tibble: 6 x 8</span></span>
+<span id="cb8-6"><a href="#cb8-6"></a><span class="co">#&gt;   committee rule_num num_conditions coverage  mean   min   max error</span></span>
+<span id="cb8-7"><a href="#cb8-7"></a><span class="co">#&gt;       &lt;int&gt;    &lt;int&gt;          &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;</span></span>
+<span id="cb8-8"><a href="#cb8-8"></a><span class="co">#&gt; 1         1        1              2      107 3419.  2700  4150  208.</span></span>
+<span id="cb8-9"><a href="#cb8-9"></a><span class="co">#&gt; 2         1        2              2       92 3972   3250  4775  276.</span></span>
+<span id="cb8-10"><a href="#cb8-10"></a><span class="co">#&gt; 3         1        3              2       58 4680.  3950  5200  207.</span></span>
+<span id="cb8-11"><a href="#cb8-11"></a><span class="co">#&gt; 4         1        4              2       23 4699.  3950  6050  276.</span></span>
+<span id="cb8-12"><a href="#cb8-12"></a><span class="co">#&gt; 5         1        5              2       53 5475   4750  6300  239.</span></span>
+<span id="cb8-13"><a href="#cb8-13"></a><span class="co">#&gt; 6         2        1              0      333 4207.  2700  6300  315.</span></span></code></pre></div>
+<p>For the first committee, rule four contains two conditions and covers 23 data points from the original data set. We can find these data points by converting the character string for the rule to an R expression, then evaluate the expression on the data set:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1"></a><span class="kw">library</span>(dplyr)</span>
+<span id="cb9-2"><a href="#cb9-2"></a><span class="kw">library</span>(purrr)</span>
+<span id="cb9-3"><a href="#cb9-3"></a><span class="kw">library</span>(rlang)</span>
+<span id="cb9-4"><a href="#cb9-4"></a></span>
+<span id="cb9-5"><a href="#cb9-5"></a>rule_<span class="dv">4</span>_filter &lt;-<span class="st"> </span></span>
+<span id="cb9-6"><a href="#cb9-6"></a><span class="st">  </span>cb_res <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb9-7"><a href="#cb9-7"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(rule_num <span class="op">==</span><span class="st"> </span><span class="dv">4</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb9-8"><a href="#cb9-8"></a><span class="st">  </span><span class="kw">pluck</span>(<span class="st">&quot;rule&quot;</span>) <span class="op">%&gt;%</span><span class="st">   </span><span class="co"># &lt;- character string</span></span>
+<span id="cb9-9"><a href="#cb9-9"></a><span class="st">  </span><span class="kw">parse_expr</span>() <span class="op">%&gt;%</span><span class="st">    </span><span class="co"># &lt;- R expression</span></span>
+<span id="cb9-10"><a href="#cb9-10"></a><span class="st">  </span><span class="kw">eval_tidy</span>(penguins) <span class="co"># &lt;- logical vector</span></span>
+<span id="cb9-11"><a href="#cb9-11"></a></span>
+<span id="cb9-12"><a href="#cb9-12"></a>penguins <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb9-13"><a href="#cb9-13"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">slice</span>(<span class="kw">which</span>(rule_<span class="dv">4</span>_filter))</span>
+<span id="cb9-14"><a href="#cb9-14"></a><span class="co">#&gt; # A tibble: 23 x 7</span></span>
+<span id="cb9-15"><a href="#cb9-15"></a><span class="co">#&gt;    species island bill_length_mm bill_depth_mm flipper_length_… body_mass_g</span></span>
+<span id="cb9-16"><a href="#cb9-16"></a><span class="co">#&gt;    &lt;fct&gt;   &lt;fct&gt;           &lt;dbl&gt;         &lt;dbl&gt;            &lt;int&gt;       &lt;int&gt;</span></span>
+<span id="cb9-17"><a href="#cb9-17"></a><span class="co">#&gt;  1 Adelie  Dream            41.1          18.1              205        4300</span></span>
+<span id="cb9-18"><a href="#cb9-18"></a><span class="co">#&gt;  2 Adelie  Dream            40.8          18.9              208        4300</span></span>
+<span id="cb9-19"><a href="#cb9-19"></a><span class="co">#&gt;  3 Adelie  Biscoe           41            20                203        4725</span></span>
+<span id="cb9-20"><a href="#cb9-20"></a><span class="co">#&gt;  4 Adelie  Torge…           44.1          18                210        4000</span></span>
+<span id="cb9-21"><a href="#cb9-21"></a><span class="co">#&gt;  5 Gentoo  Biscoe           59.6          17                230        6050</span></span>
+<span id="cb9-22"><a href="#cb9-22"></a><span class="co">#&gt;  6 Gentoo  Biscoe           44.4          17.3              219        5250</span></span>
+<span id="cb9-23"><a href="#cb9-23"></a><span class="co">#&gt;  7 Gentoo  Biscoe           49.8          16.8              230        5700</span></span>
+<span id="cb9-24"><a href="#cb9-24"></a><span class="co">#&gt;  8 Gentoo  Biscoe           50.8          17.3              228        5600</span></span>
+<span id="cb9-25"><a href="#cb9-25"></a><span class="co">#&gt;  9 Gentoo  Biscoe           52.1          17                230        5550</span></span>
+<span id="cb9-26"><a href="#cb9-26"></a><span class="co">#&gt; 10 Gentoo  Biscoe           52.2          17.1              228        5400</span></span>
+<span id="cb9-27"><a href="#cb9-27"></a><span class="co">#&gt; # … with 13 more rows, and 1 more variable: sex &lt;fct&gt;</span></span></code></pre></div>
+</div>
+<div id="rulefit-makes-one-model-with-rule-predictors" class="section level2">
+<h2>RuleFit makes one model with rule predictors</h2>
+<p>RuleFit uses rules in a more straightforward way. It creates an initial tree (or ensemble of trees) from the data. Rules are extracted from this initial model and converted to a set of binary features. These features are then added to a regularized regression model (along with the original columns). For example:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1"></a>data_with_rules &lt;-<span class="st"> </span></span>
+<span id="cb10-2"><a href="#cb10-2"></a><span class="st">  </span>data <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb10-3"><a href="#cb10-3"></a><span class="st">  </span><span class="kw">mutate</span>(</span>
+<span id="cb10-4"><a href="#cb10-4"></a>    <span class="dt">rule_1 =</span> <span class="kw">ifelse</span>(A <span class="op">&lt;</span><span class="st">  </span>a <span class="op">&amp;</span><span class="st"> </span>B <span class="op">&lt;</span><span class="st">  </span>b, <span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb10-5"><a href="#cb10-5"></a>    <span class="dt">rule_2 =</span> <span class="kw">ifelse</span>(A <span class="op">&lt;</span><span class="st">  </span>a <span class="op">&amp;</span><span class="st"> </span>B <span class="op">&gt;=</span><span class="st"> </span>b, <span class="dv">0</span>, <span class="dv">1</span>),</span>
+<span id="cb10-6"><a href="#cb10-6"></a>    <span class="dt">rule_2 =</span> <span class="kw">ifelse</span>(A <span class="op">&gt;=</span><span class="st"> </span>a,          <span class="dv">0</span>, <span class="dv">1</span>)</span>
+<span id="cb10-7"><a href="#cb10-7"></a>  )</span>
+<span id="cb10-8"><a href="#cb10-8"></a></span>
+<span id="cb10-9"><a href="#cb10-9"></a>rule_fit_model &lt;-<span class="st"> </span></span>
+<span id="cb10-10"><a href="#cb10-10"></a><span class="st">  </span><span class="kw">glmnet</span>(<span class="dt">x =</span> data_with_rules <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">select</span>(A, B, <span class="kw">starts_with</span>(<span class="st">&quot;rule_&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span><span class="kw">as.matrix</span>(),</span>
+<span id="cb10-11"><a href="#cb10-11"></a>         <span class="dt">y =</span> data_with_rules<span class="op">$</span>y,</span>
+<span id="cb10-12"><a href="#cb10-12"></a>         <span class="dt">alpha =</span> <span class="dv">1</span>)</span></code></pre></div>
+<p>It is common to use a lasso model to regularize the model and eliminate non-informative features.</p>
+<p>While the details can depend on the implementation, the rules do not appear to be pruned or simplified.</p>
+<p>The tuning parameters for this model inherits the parameter of the tree-based model as well as the amount of regularization used in the <code>glmnet</code> model. The complexity of the rules is determined by the allowed depth of the tree. For example, using a depth of four means that each rule may have up to four terms that define it. The number of rules would be primarily determined by the number of boosting iterations.</p>
+<p>RuleFit, as implemented by the <code>xrf</code> package, required all of the data to be complete (i.e, non-missing). In the original data set, the body mass is encoded as integer and <code>xrf</code> requires a double, so:</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1"></a>penguins &lt;-<span class="st"> </span></span>
+<span id="cb11-2"><a href="#cb11-2"></a><span class="st">  </span>penguins <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb11-3"><a href="#cb11-3"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">body_mass_g =</span> body_mass_g <span class="op">+</span><span class="st"> </span><span class="fl">0.0</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb11-4"><a href="#cb11-4"></a><span class="st">  </span><span class="kw">na.omit</span>()</span></code></pre></div>
+<p>Fitting the model:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1"></a>rule_fit_spec &lt;-<span class="st"> </span></span>
+<span id="cb12-2"><a href="#cb12-2"></a><span class="st">  </span><span class="kw">rule_fit</span>(<span class="dt">trees =</span> <span class="dv">10</span>, <span class="dt">tree_depth =</span> <span class="dv">5</span>, <span class="dt">penalty =</span> <span class="fl">0.01</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb12-3"><a href="#cb12-3"></a><span class="st">  </span><span class="kw">set_engine</span>(<span class="st">&quot;xrf&quot;</span>) <span class="op">%&gt;%</span></span>
+<span id="cb12-4"><a href="#cb12-4"></a><span class="st">  </span><span class="kw">set_mode</span>(<span class="st">&quot;regression&quot;</span>) </span>
+<span id="cb12-5"><a href="#cb12-5"></a></span>
+<span id="cb12-6"><a href="#cb12-6"></a>rule_fit_fit &lt;-<span class="st"> </span></span>
+<span id="cb12-7"><a href="#cb12-7"></a><span class="st">  </span>rule_fit_spec <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb12-8"><a href="#cb12-8"></a><span class="st">  </span><span class="kw">fit</span>(body_mass_g <span class="op">~</span><span class="st"> </span>., <span class="dt">data =</span> penguins)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1"></a>rule_fit_fit</span>
+<span id="cb13-2"><a href="#cb13-2"></a><span class="co">#&gt; parsnip model object</span></span>
+<span id="cb13-3"><a href="#cb13-3"></a><span class="co">#&gt; </span></span>
+<span id="cb13-4"><a href="#cb13-4"></a><span class="co">#&gt; Fit time:  1.9s </span></span>
+<span id="cb13-5"><a href="#cb13-5"></a><span class="co">#&gt; An eXtreme RuleFit model of 112 rules.</span></span>
+<span id="cb13-6"><a href="#cb13-6"></a><span class="co">#&gt; </span></span>
+<span id="cb13-7"><a href="#cb13-7"></a><span class="co">#&gt; Original Formula:</span></span>
+<span id="cb13-8"><a href="#cb13-8"></a><span class="co">#&gt; </span></span>
+<span id="cb13-9"><a href="#cb13-9"></a><span class="co">#&gt; body_mass_g ~ species + island + bill_length_mm + bill_depth_mm + flipper_length_mm + [truncated]</span></span></code></pre></div>
+<p>To get the rules and their associated coefficients, the <code>tidy()</code> method can be used again:</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1"></a>rf_res &lt;-<span class="st"> </span><span class="kw">tidy</span>(rule_fit_fit)</span>
+<span id="cb14-2"><a href="#cb14-2"></a>rf_res</span>
+<span id="cb14-3"><a href="#cb14-3"></a><span class="co">#&gt; # A tibble: 110 x 3</span></span>
+<span id="cb14-4"><a href="#cb14-4"></a><span class="co">#&gt;    rule_id          rule                                                estimate</span></span>
+<span id="cb14-5"><a href="#cb14-5"></a><span class="co">#&gt;    &lt;chr&gt;            &lt;chr&gt;                                                  &lt;dbl&gt;</span></span>
+<span id="cb14-6"><a href="#cb14-6"></a><span class="co">#&gt;  1 (Intercept)      ( TRUE )                                             5753.  </span></span>
+<span id="cb14-7"><a href="#cb14-7"></a><span class="co">#&gt;  2 bill_depth_mm    ( bill_depth_mm )                                     -15.9 </span></span>
+<span id="cb14-8"><a href="#cb14-8"></a><span class="co">#&gt;  3 bill_length_mm   ( bill_length_mm )                                      1.10</span></span>
+<span id="cb14-9"><a href="#cb14-9"></a><span class="co">#&gt;  4 flipper_length_… ( flipper_length_mm )                                  -7.67</span></span>
+<span id="cb14-10"><a href="#cb14-10"></a><span class="co">#&gt;  5 islandDream      ( island == &#39;Dream&#39; )                                 -29.2 </span></span>
+<span id="cb14-11"><a href="#cb14-11"></a><span class="co">#&gt;  6 islandTorgersen  ( island == &#39;Torgersen&#39; )                             -16.8 </span></span>
+<span id="cb14-12"><a href="#cb14-12"></a><span class="co">#&gt;  7 r0_2             ( species == &#39;Gentoo&#39; )                               472.  </span></span>
+<span id="cb14-13"><a href="#cb14-13"></a><span class="co">#&gt;  8 r0_3             ( sex != &#39;male&#39; ) &amp; ( species != &#39;Gentoo&#39; )           -78.8 </span></span>
+<span id="cb14-14"><a href="#cb14-14"></a><span class="co">#&gt;  9 r1_2             ( flipper_length_mm &gt;= 211.5 )                        219.  </span></span>
+<span id="cb14-15"><a href="#cb14-15"></a><span class="co">#&gt; 10 r1_3             ( flipper_length_mm &lt;  194.5 ) &amp; ( flipper_length_…  -142.  </span></span>
+<span id="cb14-16"><a href="#cb14-16"></a><span class="co">#&gt; # … with 100 more rows</span></span></code></pre></div>
+<p>Note that the units of each predictor have been scaled to be between zero and one.</p>
+<p>Looking at the rules, there are examples of some rules, such as:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1"></a>( bill_depth_mm <span class="op">&gt;=</span><span class="st"> </span><span class="fl">14.1499996</span> ) <span class="op">&amp;</span><span class="st"> </span></span>
+<span id="cb15-2"><a href="#cb15-2"></a>( flipper_length_mm <span class="op">&lt;</span><span class="st">  </span><span class="dv">227</span> ) <span class="op">&amp;</span><span class="st"> </span></span>
+<span id="cb15-3"><a href="#cb15-3"></a>( flipper_length_mm <span class="op">&lt;</span><span class="st">  </span><span class="fl">228.5</span> ) <span class="op">&amp;</span><span class="st"> </span></span>
+<span id="cb15-4"><a href="#cb15-4"></a>( flipper_length_mm <span class="op">&gt;=</span><span class="st"> </span><span class="fl">197.5</span> ) <span class="op">&amp;</span><span class="st"> </span></span>
+<span id="cb15-5"><a href="#cb15-5"></a>( flipper_length_mm <span class="op">&gt;=</span><span class="st"> </span><span class="fl">224.5</span> )<span class="st">&quot;</span></span></code></pre></div>
+<p>which can be simplified to have fewer conditions:</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1"></a>( bill_depth_mm <span class="op">&gt;=</span><span class="st"> </span><span class="fl">14.1499996</span> ) <span class="op">&amp;</span><span class="st"> </span></span>
+<span id="cb16-2"><a href="#cb16-2"></a>( flipper_length_mm <span class="op">&lt;</span><span class="st">  </span><span class="dv">227</span> ) <span class="op">&amp;</span><span class="st"> </span></span>
+<span id="cb16-3"><a href="#cb16-3"></a>( flipper_length_mm <span class="op">&gt;=</span><span class="st"> </span><span class="fl">197.5</span> ) <span class="op">&amp;</span><span class="st"> </span></span></code></pre></div>
+<p>Also, the <code>tidy()</code> function can extract the same information but use the original predictors as the unit:</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1"></a>rf_variable_res &lt;-<span class="st"> </span><span class="kw">tidy</span>(rule_fit_fit, <span class="dt">unit =</span> <span class="st">&quot;columns&quot;</span>)</span>
+<span id="cb17-2"><a href="#cb17-2"></a>rf_variable_res</span>
+<span id="cb17-3"><a href="#cb17-3"></a><span class="co">#&gt; # A tibble: 452 x 3</span></span>
+<span id="cb17-4"><a href="#cb17-4"></a><span class="co">#&gt;    rule_id term              estimate</span></span>
+<span id="cb17-5"><a href="#cb17-5"></a><span class="co">#&gt;    &lt;chr&gt;   &lt;chr&gt;                &lt;dbl&gt;</span></span>
+<span id="cb17-6"><a href="#cb17-6"></a><span class="co">#&gt;  1 r0_3    species             -78.8 </span></span>
+<span id="cb17-7"><a href="#cb17-7"></a><span class="co">#&gt;  2 r0_2    species             472.  </span></span>
+<span id="cb17-8"><a href="#cb17-8"></a><span class="co">#&gt;  3 r0_3    sex                 -78.8 </span></span>
+<span id="cb17-9"><a href="#cb17-9"></a><span class="co">#&gt;  4 r1_3    flipper_length_mm  -142.  </span></span>
+<span id="cb17-10"><a href="#cb17-10"></a><span class="co">#&gt;  5 r1_2    flipper_length_mm   219.  </span></span>
+<span id="cb17-11"><a href="#cb17-11"></a><span class="co">#&gt;  6 r1_3    flipper_length_mm  -142.  </span></span>
+<span id="cb17-12"><a href="#cb17-12"></a><span class="co">#&gt;  7 r2_7    flipper_length_mm     9.04</span></span>
+<span id="cb17-13"><a href="#cb17-13"></a><span class="co">#&gt;  8 r2_7    sex                   9.04</span></span>
+<span id="cb17-14"><a href="#cb17-14"></a><span class="co">#&gt;  9 r2_7    species               9.04</span></span>
+<span id="cb17-15"><a href="#cb17-15"></a><span class="co">#&gt; 10 r3_3    flipper_length_mm  -101.  </span></span>
+<span id="cb17-16"><a href="#cb17-16"></a><span class="co">#&gt; # … with 442 more rows</span></span></code></pre></div>
+<p>A single rule might be represented with multiple rows of this version of the data. These results can also be used to compute a rough estimate or variable importance using the absolute value of the coefficients:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1"></a>num_rules &lt;-<span class="st"> </span><span class="kw">sum</span>(<span class="kw">grepl</span>(<span class="st">&quot;^r[0-9]*_&quot;</span>, <span class="kw">unique</span>(rf_res<span class="op">$</span>rule_id))) <span class="op">+</span><span class="st"> </span><span class="dv">1</span></span>
+<span id="cb18-2"><a href="#cb18-2"></a></span>
+<span id="cb18-3"><a href="#cb18-3"></a>rf_variable_res <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb18-4"><a href="#cb18-4"></a><span class="st">  </span>dplyr<span class="op">::</span><span class="kw">filter</span>(term <span class="op">!=</span><span class="st"> &quot;(Intercept)&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb18-5"><a href="#cb18-5"></a><span class="st">  </span><span class="kw">group_by</span>(term) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb18-6"><a href="#cb18-6"></a><span class="st">  </span><span class="kw">summarize</span>(<span class="dt">effect =</span> <span class="kw">sum</span>(<span class="kw">abs</span>(estimate)), <span class="dt">.groups =</span> <span class="st">&quot;drop&quot;</span>) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb18-7"><a href="#cb18-7"></a><span class="st">  </span><span class="kw">ungroup</span>() <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb18-8"><a href="#cb18-8"></a><span class="st">  </span><span class="co"># normalize by number of possible occurrences</span></span>
+<span id="cb18-9"><a href="#cb18-9"></a><span class="st">  </span><span class="kw">mutate</span>(<span class="dt">effect =</span> effect <span class="op">/</span><span class="st"> </span>num_rules ) <span class="op">%&gt;%</span><span class="st"> </span></span>
+<span id="cb18-10"><a href="#cb18-10"></a><span class="st">  </span><span class="kw">arrange</span>(<span class="kw">desc</span>(effect))</span>
+<span id="cb18-11"><a href="#cb18-11"></a><span class="co">#&gt; # A tibble: 6 x 2</span></span>
+<span id="cb18-12"><a href="#cb18-12"></a><span class="co">#&gt;   term              effect</span></span>
+<span id="cb18-13"><a href="#cb18-13"></a><span class="co">#&gt;   &lt;chr&gt;              &lt;dbl&gt;</span></span>
+<span id="cb18-14"><a href="#cb18-14"></a><span class="co">#&gt; 1 flipper_length_mm 219.  </span></span>
+<span id="cb18-15"><a href="#cb18-15"></a><span class="co">#&gt; 2 bill_depth_mm     175.  </span></span>
+<span id="cb18-16"><a href="#cb18-16"></a><span class="co">#&gt; 3 bill_length_mm    175.  </span></span>
+<span id="cb18-17"><a href="#cb18-17"></a><span class="co">#&gt; 4 species            69.5 </span></span>
+<span id="cb18-18"><a href="#cb18-18"></a><span class="co">#&gt; 5 sex                52.0 </span></span>
+<span id="cb18-19"><a href="#cb18-19"></a><span class="co">#&gt; 6 island              9.84</span></span></code></pre></div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
