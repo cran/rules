@@ -1,6 +1,10 @@
+# rules 0.2.0
+
+* Model definition functions (e.g. `cubist_rules()`) were moved to the parsnip package.
+
 # rules 0.1.2
 
-* Maintenance release demanded by CRAN. 
+* Maintenance release demanded by CRAN.
 
 # rules 0.1.1
 

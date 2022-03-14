@@ -2,11 +2,13 @@ context("C5 fits")
 
 source(test_path("test-helpers.R"))
 
-ctrl <- C50::C5.0Control(subset = FALSE, seed = 2)
-
 # ------------------------------------------------------------------------------
 
 test_that('formula method', {
+  skip_on_cran()
+  skip_if_not_installed("C50")
+
+  ctrl <- C50::C5.0Control(subset = FALSE, seed = 2)
 
   c5_fit_exp <-
     C50::C5.0(
@@ -42,6 +44,10 @@ test_that('formula method', {
 # ------------------------------------------------------------------------------
 
 test_that('formula method - control', {
+  skip_on_cran()
+  skip_if_not_installed("C50")
+
+  ctrl <- C50::C5.0Control(subset = FALSE, seed = 2)
 
   c5_fit_exp <-
     C50::C5.0(
@@ -76,6 +82,10 @@ test_that('formula method - control', {
 # ------------------------------------------------------------------------------
 
 test_that('non-formula method', {
+  skip_on_cran()
+  skip_if_not_installed("C50")
+
+  ctrl <- C50::C5.0Control(subset = FALSE, seed = 2)
 
   c5_fit_exp <-
     C50::C5.0(
@@ -110,6 +120,10 @@ test_that('non-formula method', {
 # ------------------------------------------------------------------------------
 
 test_that('non-formula method - control', {
+  skip_on_cran()
+  skip_if_not_installed("C50")
+
+  ctrl <- C50::C5.0Control(subset = FALSE, seed = 2)
 
   c5_fit_exp <-
     C50::C5.0(
@@ -144,6 +158,11 @@ test_that('non-formula method - control', {
 # ------------------------------------------------------------------------------
 
 test_that('printing', {
+  skip_on_cran()
+  skip_if_not_installed("C50")
+
+  ctrl <- C50::C5.0Control(subset = FALSE, seed = 2)
+
   expect_output(print(C5_rules(trees = 1)))
 })
 
@@ -166,6 +185,11 @@ test_that('updates', {
 # ------------------------------------------------------------------------------
 
 test_that('mulit-predict', {
+  skip_on_cran()
+  skip_if_not_installed("C50")
+
+  ctrl <- C50::C5.0Control(subset = FALSE, seed = 2)
+
   c5_fit <-
     C5_rules(trees = 10) %>%
     set_engine("C5.0", seed = 2) %>%
@@ -193,8 +217,9 @@ test_that('mulit-predict', {
 
 
 test_that('tunable', {
+
   C5_rules_C5.0 <-
-    rules::C5_rules(trees = tune(), min_n = tune()) %>%
+    C5_rules(trees = tune(), min_n = tune()) %>%
     set_engine('C5.0') %>%
     tunable()
 
@@ -203,4 +228,20 @@ test_that('tunable', {
     c(1L, 100L)
   )
 
+})
+
+test_that('mode specific package dependencies', {
+  expect_identical(
+    get_from_env(paste0("C5_rules", "_pkgs")) %>%
+      dplyr::filter(engine == "C5.0", mode == "classification") %>%
+      dplyr::pull(pkg),
+    list(c("C50", "rules"))
+  )
+
+  expect_identical(
+    get_from_env(paste0("C5_rules", "_pkgs")) %>%
+      dplyr::filter(engine == "C5.0", mode == "regression") %>%
+      dplyr::pull(pkg),
+    list()
+  )
 })

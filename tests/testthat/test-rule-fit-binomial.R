@@ -207,7 +207,7 @@ test_that('tidy method - two classes', {
 test_that('tunable', {
   skip_if_not_installed("xrf")
   rule_fit_xrf <-
-    rules::rule_fit(
+    rule_fit(
       tree_depth = tune(),
       trees = tune(),
       learn_rate = tune(),
@@ -243,3 +243,18 @@ test_that('tunable', {
 
 })
 
+test_that('mode specific package dependencies', {
+  expect_identical(
+    get_from_env(paste0("rule_fit", "_pkgs")) %>%
+      dplyr::filter(engine == "xrf", mode == "classification") %>%
+      dplyr::pull(pkg),
+    list(c("xrf", "rules"))
+  )
+
+  expect_identical(
+    get_from_env(paste0("rule_fit", "_pkgs")) %>%
+      dplyr::filter(engine == "xrf", mode == "regression") %>%
+      dplyr::pull(pkg),
+    list(c("xrf", "rules"))
+  )
+})
