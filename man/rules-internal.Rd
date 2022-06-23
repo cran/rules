@@ -30,10 +30,15 @@ xrf_fit(
   max_depth = 6,
   nrounds = 15,
   eta = 0.3,
-  colsample_bytree = 1,
+  colsample_bynode = NULL,
+  colsample_bytree = NULL,
   min_child_weight = 1,
   gamma = 0,
   subsample = 1,
+  validation = 0,
+  early_stop = NULL,
+  counts = TRUE,
+  event_level = c("first", "second"),
   lambda = 0.1,
   ...
 )

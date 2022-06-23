@@ -1,3 +1,8 @@
+#' @keywords internal
+"_PACKAGE"
+
+#------------------------------------------------------------------------------#
+
 #' @importFrom rlang enquo call2 abort eval_tidy warn new_quosure empty_env
 #' @importFrom rlang enquos expr
 #' @importFrom purrr map_dfr
@@ -10,7 +15,6 @@
 #' @importFrom tidyr nest
 #' @importFrom utils head globalVariables
 #' @importFrom dplyr %>% bind_rows bind_cols
-#' @import modeldata
 #'
 #' @export
 parsnip::multi_predict
@@ -23,14 +27,18 @@ generics::tidy
 #' @export
 generics::tunable
 
+#' @importFrom dials mtry_prop
+#' @export
+dials::mtry_prop
+
 # ------------------------------------------------------------------------------
 
 utils::globalVariables(
   c(
     ".pred_1", ".pred_2", ".pred_class", ".row_number", "object", "new_data", "name",
-    ".pred", "(Intercept)", "committee", "rule", "trials",
+    ".pred", "(Intercept)", "committee", "rule", "trials", "terms",
     "column", "conds", "cover", "coverage", "error", "esterr", "estimate", "feature", "hival",
     "less_than", "level", "loval", "num_conditions", "rule_comp", "rule_id", "rule_num",
-    "split_id", "split_value", "statistic", "term", "value"
+    "split_id", "split_value", "statistic", "term", "value", "lift", "ok", "trial"
   )
 )

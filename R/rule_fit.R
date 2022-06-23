@@ -6,44 +6,119 @@ xrf_fit <-
            data,
            max_depth = 6,
            nrounds = 15,
-           eta  = 0.3,
-           colsample_bytree = 1,
+           eta = 0.3,
+           colsample_bynode = NULL,
+           colsample_bytree = NULL,
            min_child_weight = 1,
            gamma = 0,
            subsample = 1,
+           validation = 0,
+           early_stop = NULL,
+           counts = TRUE,
+           event_level = c("first", "second"),
            lambda = 0.1,
            ...) {
-    args <- list(object = formula,
-                 data = rlang::expr(data),
-                 xgb_control =
-                   list(
-                     nrounds = nrounds,
-                     max_depth = max_depth,
-                     eta = eta,
-                     colsample_bytree = colsample_bytree,
-                     min_child_weight = min_child_weight,
-                     gamma = gamma,
-                     subsample = subsample
-                   )
-    )
+    converted <-
+      parsnip::.convert_form_to_xy_fit(
+        formula = formula,
+        data = data
+      )
+
+    prefit <-
+      parsnip::xgb_train(
+        converted$x,
+        converted$y,
+        max_depth = max_depth,
+        nrounds = nrounds,
+        eta = eta,
+        colsample_bynode = colsample_bynode,
+        colsample_bytree = colsample_bytree,
+        min_child_weight = min_child_weight,
+        gamma = gamma,
+        subsample = subsample,
+        validation = validation,
+        early_stop = early_stop,
+        objective = NULL,
+        counts = counts,
+        event_level = event_level
+      )
+
+    args <-
+      list(
+        object = formula,
+        data = rlang::expr(data),
+        prefit_xgb = prefit
+      )
+
     dots <- rlang::enquos(...)
+
+    # ignore parsnip-protected argument
+    dots[["xgb_control"]] <- NULL
+
     if (!any(names(dots) == "family")) {
       info <- get_family(formula, data)
       args$family <- info$fam
       if (info$fam == "multinomial") {
+        # have to mock an xgb_control object for xrf for now
+        args$xgb_control <- list()
         args$xgb_control$num_class <- info$classes
+        args$xgb_control$nrounds <- 10
       }
     }
     if (length(dots) > 0) {
       args <- c(args, dots)
     }
-    cl <- rlang::call2(.fn = "xrf", .ns = "xrf",!!!args)
+
+    cl <- rlang::call2(.fn = "xrf", .ns = "xrf", !!!args)
     res <- rlang::eval_tidy(cl)
-    res$lambda  <- lambda
+
+    res$lambda <- lambda
     res$family <- args$family
     res$levels <- get_levels(formula, data)
     res
+}
+
+process_mtry <- function(colsample_bytree, counts, n_predictors, is_missing) {
+  if (!is.logical(counts)) {
+    rlang::abort("'counts' should be a logical value.")
   }
+
+  ineq <- if (counts) {"greater"} else {"less"}
+  interp <- if (counts) {"count"} else {"proportion"}
+  opp <- if (!counts) {"count"} else {"proportion"}
+
+  if ((colsample_bytree < 1 & counts) | (colsample_bytree > 1 & !counts)) {
+    rlang::abort(
+      paste0(
+        "The supplied argument `mtry = ", colsample_bytree, "` must be ",
+        ineq, " than or equal to 1. \n\n`mtry` is currently being interpreted ",
+        "as a ", interp, " rather than a ", opp, ". Supply `counts = ", !counts,
+        "` to `set_engine()` to supply this argument as a ", opp, " rather than ",
+        # TODO: add a section to the linked parsnip docs on mtry vs mtry_prop
+        "a ", interp, ". \n\nSee `?details_rule_fit_xrf` for more details."
+      ),
+      call = NULL
+    )
+  }
+
+  if (rlang::is_call(colsample_bytree)) {
+    if (rlang::call_name(colsample_bytree) == "tune") {
+      rlang::abort(
+        paste0(
+          "The supplied `mtry` parameter is a call to `tune`. Did you forget ",
+          "to optimize hyperparameters with a tuning function like `tune::tune_grid`?"
+        ),
+        call = NULL
+      )
+    }
+  }
+
+  if (counts && !is_missing) {
+    colsample_bytree <- colsample_bytree / n_predictors
+  }
+
+  colsample_bytree
+}
 
 get_family <- function(formula, data) {
   m <- model.frame(formula, head(data))
@@ -52,7 +127,7 @@ get_family <- function(formula, data) {
     if (is.integer(y)) {
       res <- "poisson"
     } else {
-      res <-  "gaussian"
+      res <- "gaussian"
     }
     lvl <- NA
   } else {
@@ -101,7 +176,6 @@ get_levels <- function(formula, data) {
 #' @keywords internal
 #' @rdname rules-internal
 xrf_pred <- function(object, new_data, lambda = object$fit$lambda, type, ...) {
-
   lambda <- sort(lambda)
 
   res <- predict(object$fit, new_data, lambda = lambda, type = "response")
@@ -163,10 +237,10 @@ organize_xrf_class_pred <- function(x, object) {
 
 organize_xrf_class_prob <- function(x, object) {
   if (!inherits(x, "array")) {
-    x <- x[,1]
+    x <- x[, 1]
     x <- tibble(v1 = 1 - x, v2 = x)
   } else {
-    x <- x[,,1]
+    x <- x[, , 1]
     x <- as_tibble(x)
   }
   colnames(x) <- object$lvl
@@ -176,7 +250,7 @@ organize_xrf_class_prob <- function(x, object) {
 organize_xrf_multi_pred <- function(x, object, penalty, fam) {
   if (fam %in% c("gaussian", "poisson")) {
     if (ncol(x) == 1) {
-      res <- tibble(penalty = rep(penalty, nrow(x)), .pred = unname(x[,1]))
+      res <- tibble(penalty = rep(penalty, nrow(x)), .pred = unname(x[, 1]))
     } else {
       res <-
         tibble::as_tibble(x) %>%
@@ -192,11 +266,10 @@ organize_xrf_multi_pred <- function(x, object, penalty, fam) {
     }
   } else {
     if (fam == "binomial") {
-
       res <-
         tibble::as_tibble(x) %>%
         dplyr::mutate(.row_number = 1:nrow(x)) %>%
-        tidyr::pivot_longer(cols = c(-.row_number), values_to = ".pred_class")  %>%
+        tidyr::pivot_longer(cols = c(-.row_number), values_to = ".pred_class") %>%
         dplyr::select(-name) %>%
         dplyr::mutate(
           .pred_class = ifelse(.pred_class >= .5, object$lvl[2], object$lvl[1]),
@@ -217,7 +290,6 @@ organize_xrf_multi_pred <- function(x, object, penalty, fam) {
           dplyr::select(-.row_number) %>%
           setNames(".pred")
       }
-
     } else {
       # fam = "multinomial"
       res <-
@@ -250,9 +322,7 @@ organize_xrf_multi_pred <- function(x, object, penalty, fam) {
 }
 
 organize_xrf_multi_prob <- function(x, object, penalty, fam) {
-
   if (fam == "binomial") {
-
     res <-
       tibble::as_tibble(x) %>%
       dplyr::mutate(.row_number = 1:nrow(x)) %>%
@@ -279,7 +349,6 @@ organize_xrf_multi_prob <- function(x, object, penalty, fam) {
         dplyr::select(-.row_number) %>%
         setNames(".pred")
     }
-
   } else {
     # fam = "multinomial"
     res <-
@@ -309,10 +378,12 @@ organize_xrf_multi_prob <- function(x, object, penalty, fam) {
 #' @rdname rules-internal
 tunable.rule_fit <- function(x, ...) {
   tibble::tibble(
-    name = c('mtry', 'trees', 'min_n', 'tree_depth', 'learn_rate',
-             'loss_reduction', 'sample_size', 'penalty'),
+    name = c(
+      "mtry", "trees", "min_n", "tree_depth", "learn_rate",
+      "loss_reduction", "sample_size", "penalty"
+    ),
     call_info = list(
-      list(pkg = "rules", fun = "mtry_prop"),
+      list(pkg = "dials", fun = "mtry_prop"),
       list(pkg = "dials", fun = "trees", range = c(5L, 100L)),
       list(pkg = "dials", fun = "min_n"),
       list(pkg = "dials", fun = "tree_depth", range = c(1L, 10L)),
@@ -323,24 +394,6 @@ tunable.rule_fit <- function(x, ...) {
     ),
     source = "model_spec",
     component = class(x)[class(x) != "model_spec"][1],
-    component_id =  "main"
+    component_id = "main"
   )
 }
-
-#' Proportion of Randomly Selected Predictors
-#'
-#' @inheritParams committees
-#' @return A `dials` with classes "quant_param" and "param". The `range` element
-#' of the object is always converted to a list with elements "lower" and "upper".
-#' @export
-mtry_prop <- function(range = c(0.1, 1), trans = NULL)  {
-  dials::new_quant_param(
-    type = "double",
-    range = range,
-    inclusive = c(TRUE, TRUE),
-    trans = trans,
-    label = c(mtry_prop = "Proportion Randomly Selected Predictors"),
-    finalize = NULL
-  )
-}
-
