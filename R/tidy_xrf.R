@@ -1,15 +1,20 @@
 #' @export
 #' @rdname tidy.cubist
-#' @param penalty A single numeric value for the `lambda` penalty value.
-#' @param unit What data should be returned? For `unit = 'rules'`, each row
-#' corresponds to a rule. For `unit = 'columns'`, each row is a predictor
-#' column. The latter can be helpful when determining variable importance.
 tidy.xrf <- function(x, penalty = NULL, unit = c("rules", "columns"), ...) {
   unit <- match.arg(unit)
 
+  msg <- "Please choose a single numeric value of 'penalty'."
+  if (is.null(penalty)) {
+    rlang::abort(msg)
+  } else {
+    if (!is.numeric(penalty) | length(penalty) != 1) {
+      rlang::abort(msg)
+    }
+  }
+
   lvls <- x$levels
   cat_terms <- expand_xlev(x$glm$xlev)
-  coef_table <- xrf_coefs(x)
+  coef_table <- xrf_coefs(x, penalty = penalty)
   if (unit == "rules") {
     res <-
       dplyr::left_join(coef_table, cat_terms, by = "term") %>%
@@ -57,7 +62,7 @@ xrf_coefs <- function(x, penalty = NULL) {
     feature_coef <-
       purrr::map(
         feature_coef,
-        ~ tibble::as_tibble(.x, .name_repair = "minimal", rownames = "rule_id")
+        ~ as_tibble(.x, .name_repair = "minimal", rownames = "rule_id")
       )
     feature_coef <-
       purrr::map2(
@@ -73,7 +78,7 @@ xrf_coefs <- function(x, penalty = NULL) {
   } else {
     feature_coef <- as.matrix(feature_coef)
     feature_coef <-
-      tibble::as_tibble(
+      as_tibble(
         feature_coef,
         .name_repair = "minimal",
         rownames = "rule_id"
@@ -104,7 +109,7 @@ xrf_coefs <- function(x, penalty = NULL) {
 
 
 lvl_to_tibble <- function(x, var_name) {
-  tibble::tibble(
+  tibble(
     term = paste0(var_name, x),
     column = var_name,
     level = x
@@ -117,7 +122,7 @@ expand_xlev <- function(x) {
     res <- purrr::map2_dfr(x, nms, lvl_to_tibble)
   } else {
     res <-
-      tibble::tibble(
+      tibble(
         term = NA_character_,
         column = NA_character_,
         level = NA_character_

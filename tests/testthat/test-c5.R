@@ -268,8 +268,8 @@ test_that("updates", {
   spec_10   <- C5_rules(trees = 10)
   spec_10_a <- C5_rules(trees = 10, min_n = 100)
 
-  expect_equal(update(spec_1,   tibble::tibble(trees = 10))$args$trees, 10)
-  expect_equal(update(spec_1_a, tibble::tibble(trees = 10))$args$trees, 10)
+  expect_equal(update(spec_1,   tibble(trees = 10))$args$trees, 10)
+  expect_equal(update(spec_1_a, tibble(trees = 10))$args$trees, 10)
 
   expect_equal(update(spec_1,   trees = 10), spec_10)
   expect_equal(update(spec_1_a, trees = 10), spec_10_a)
@@ -367,13 +367,8 @@ test_that("tidy method", {
   data(penguins, package = "modeldata")
   penguins <- penguins[complete.cases(penguins),]
 
-  tree_1 <-
-    decision_tree() %>%
-    set_engine("C5.0") %>%
-    set_mode("classification") %>%
-    fit(sex ~ ., data = penguins) %>%
-    purrr::pluck("fit")
-  expect_error(tidy(tree_1), "method only implemented for")
+  # ------------------------------------------------------------------------------
+  # rule based model
 
   rules_1 <- C5.0(sex ~ ., data = penguins, rules = TRUE)
   rules_2 <- C5.0(sex ~ ., data = penguins, rules = TRUE, trials = 5)
@@ -396,4 +391,24 @@ test_that("tidy method", {
   expect_equal(tidy_2$statistic[[50]]$lift, 1.67623) # trial 5, rule 4
 
   expect_equal(tidy_1, tidy_2[1:nrow(tidy_1), ])
+
+  # ------------------------------------------------------------------------------
+  # tree-based models
+
+  trees_1 <- C5.0(sex ~ ., data = penguins)
+  trees_2 <- C5.0(sex ~ ., data = penguins, trials = 2,
+                  control = C5.0Control(earlyStopping = FALSE))
+
+  tidy_1 <- tidy(trees_1)
+  tidy_2 <- tidy(trees_2)
+
+  print_1 <- capture.output(summary(trees_1))
+  print_2 <- capture.output(summary(trees_2))
+
+  term_nodes_1 <- sum(grepl("[0-9]\\)$", print_1))
+  term_nodes_2 <- sum(grepl("[0-9]\\)$", print_2))
+
+  expect_equal(nrow(tidy_1), term_nodes_1)
+  expect_equal(nrow(tidy_2), term_nodes_2)
+
 })
