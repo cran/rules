@@ -1,5 +1,12 @@
 cubist_args <- function(x) {
-  ctrl_args <- c("unbiased", "rules", "extrapolation", "sample", "seed", "label")
+  ctrl_args <- c(
+    "unbiased",
+    "rules",
+    "extrapolation",
+    "sample",
+    "seed",
+    "label"
+  )
 
   # translate name
   names(x) <- ifelse(names(x) == "max_rules", "rules", names(x))
@@ -32,7 +39,14 @@ cubist_args <- function(x) {
 #' @export
 #' @keywords internal
 #' @rdname rules-internal
-cubist_fit <- function(x, y, committees = 1, neighbors = 0, max_rules = NA, ...) {
+cubist_fit <- function(
+  x,
+  y,
+  committees = 1,
+  neighbors = 0,
+  max_rules = NA,
+  ...
+) {
   args <- list(
     x = rlang::expr(x),
     y = rlang::expr(y),
@@ -52,8 +66,8 @@ cubist_fit <- function(x, y, committees = 1, neighbors = 0, max_rules = NA, ...)
   res <- rlang::eval_tidy(cl)
 
   # Fix used args
-  used <- res$coefficients %>% dplyr::select(-`(Intercept)`, -committee, -rule)
-  used <- purrr::map_lgl(used, ~ any(!is.na(.x)))
+  used <- res$coefficients |> dplyr::select(-`(Intercept)`, -committee, -rule)
+  used <- purrr::map_lgl(used, \(.x) any(!is.na(.x)))
   res$vars$used <- names(used)[used]
 
   res$.neighbors <- rlang::eval_tidy(neighbors)
@@ -81,7 +95,7 @@ get_neighbors <- function(x) {
 
 cubist_pred_wrap <- function(neighbors = 0, object, new_data, ...) {
   if (length(neighbors) > 1) {
-    rlang::abort("`cubist_pred_wrap` takes a single neighbor.")
+    cli::cli_abort("{.fn cubist_pred_wrap} takes a single neighbor.")
   }
   object$spec$args$neighbors <- neighbors
   res <- predict(object, new_data)
@@ -189,7 +203,9 @@ tunable.cubist_rules <- function(x, ...) {
 multi_predict._cubist <-
   function(object, new_data, type = NULL, neighbors = NULL, ...) {
     if (any(names(enquos(...)) == "newdata")) {
-      rlang::abort("Did you mean to use `new_data` instead of `newdata`?")
+      cli::cli_abort(
+        "Did you mean to use {.arg new_data} instead of {.arg newdata}?"
+      )
     }
     if (is.null(neighbors)) {
       n <- 1
@@ -205,13 +221,13 @@ multi_predict._cubist <-
 
     res <- cubist_pred(object, new_data, neighbors = neighbors, ...)
     if (n > 1) {
-      res$.row_number <- rep(1:nrow(new_data), n)
+      res$.row_number <- rep(seq_len(nrow(new_data)), n)
       res <-
-        res %>%
-        dplyr::group_by(.row_number) %>%
-        tidyr::nest() %>%
-        dplyr::ungroup() %>%
-        dplyr::select(-.row_number) %>%
+        res |>
+        dplyr::group_by(.row_number) |>
+        tidyr::nest() |>
+        dplyr::ungroup() |>
+        dplyr::select(-.row_number) |>
         setNames(".pred")
     }
     res
